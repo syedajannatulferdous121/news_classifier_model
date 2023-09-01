@@ -1,0 +1,57 @@
+import nltk
+import joblib
+
+# Load the trained model
+loaded_model = joblib.load('news_classifier_model.pkl')
+
+# Function for preprocessing user input
+def preprocess_user_input(text):
+    # Lowercase the text
+    text = text.lower()
+
+    # Tokenization
+    words = nltk.word_tokenize(text)
+
+    # Remove stopwords
+    custom_stop_words = ["article", "writes", "newsgroups"]
+    stop_words = set(nltk.corpus.stopwords.words('english')).union(custom_stop_words)
+    words = [word for word in words if word not in stop_words]
+
+    return ' '.join(words)
+
+# Function to classify user input
+def classify_user_input(input_text):
+    # Preprocess user input
+    user_input_preprocessed = preprocess_user_input(input_text)
+
+    # Vectorize user input using TF-IDF
+    user_input_tfidf = tfidf_vectorizer.transform([user_input_preprocessed])
+
+    # Classify user input
+    predicted_category = loaded_model.predict(user_input_tfidf)[0]
+    category_name = newsgroups.target_names[predicted_category]
+
+    # Get the probability scores for each category
+    category_probs = loaded_model.predict_proba(user_input_tfidf)[0]
+
+    return category_name, category_probs
+
+# Main loop for user input
+while True:
+    user_input = input("Enter a news article text for classification (or 'exit' to quit): ")
+
+    if user_input.lower() == 'exit':
+        break
+
+    if user_input.strip() == '':
+        print("Invalid input. Please enter a valid text.")
+        continue
+
+    predicted_category, category_probs = classify_user_input(user_input)
+
+    print(f'Predicted Category: {predicted_category}')
+    print(f'Category Probabilities:')
+    for i, category in enumerate(newsgroups.target_names):
+        print(f'{category}: {category_probs[i]:.2f}')
+
+print("Goodbye!")
